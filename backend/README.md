@@ -73,7 +73,7 @@ You will need to provide detailed documentation of your API endpoints including 
 
 ### Documentation Example
 
-`GET '/api/v1.0/categories'`
+`GET '/categories'`
 
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
@@ -87,6 +87,233 @@ You will need to provide detailed documentation of your API endpoints including 
   "4": "History",
   "5": "Entertainment",
   "6": "Sports"
+}
+```
+
+`GET '/questions'`
+
+- Fetches all questions in an array and categories as a dictionary list. 
+- Request Arguments: None
+- Returns: An object with  `categories`, that contains an object of `id: category_string` key: value pairs and a list of `questions` where id is the question id .
+
+```json
+{
+  "categories": {
+        "1": "Science",
+        "2": "Art",
+        "3": "Geography",
+        "4": "History",
+        "5": "Entertainment",
+        "6": "Sports"
+    },
+    "questions": [
+        {
+            "answer": "Muhammad Ali",
+            "category": "5",
+            "difficulty": 4,
+            "id": 3,
+            "question": "What boxer's original name is Cassius Clay?"
+        },
+        {
+            "answer": "Apollo 13",
+            "category": "5",
+            "difficulty": 4,
+            "id": 4,
+            "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+        },
+        {
+            "answer": "Tom Cruise",
+            "category": "5",
+            "difficulty": 4,
+            "id": 5,
+            "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+        },
+        {
+            "answer": "Edward Scissorhands",
+            "category": "5",
+            "difficulty": 3,
+            "id": 6,
+            "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+        },
+        {
+            "answer": "Uruguay",
+            "category": "6",
+            "difficulty": 4,
+            "id": 8,
+            "question": "Which country won the first ever soccer World Cup in 1930?"
+        },
+        {
+            "answer": "George Washington Carver",
+            "category": "4",
+            "difficulty": 2,
+            "id": 9,
+            "question": "Who invented Peanut Butter?"
+        },
+        {
+            "answer": "Lake Victoria",
+            "category": "3",
+            "difficulty": 2,
+            "id": 10,
+            "question": "What is the largest lake in Africa?"
+        },
+        {
+            "answer": "The Palace of Versailles",
+            "category": "3",
+            "difficulty": 3,
+            "id": 11,
+            "question": "In which royal palace would you find the Hall of Mirrors?"
+        },
+        {
+            "answer": "Escher",
+            "category": "2",
+            "difficulty": 2,
+            "id": 13,
+            "question": "Which Dutch graphic artist–initials M C was a creator of optical illusions?"
+        },
+        {
+            "answer": "Mona Lisa",
+            "category": "2",
+            "difficulty": 3,
+            "id": 14,
+            "question": "La Giaconda is better known as what?"
+        }
+    ],
+    "sucess": true,
+    "total_questions": 20
+}
+```
+
+`DELETE '/questions/8'`
+
+- Delete a question whose id is supplied through question_id on the database 
+- Request Arguments: question_id
+- Returns: An object that contains success message and the question_id that was deleted
+
+```json
+{
+    "message": "deleted",
+    "question_id": 8,
+    "sucess": true
+}
+```
+
+`POST '/questions'`
+
+- Creates a new question
+- Request Arguments: json request body
+  ```json
+    {
+      "question": "what is your name?",
+      "answer":"kazeem",
+      "difficulty":4,
+      "category": "1"
+    }                  
+```
+- Returns: A success object.
+
+```json
+{
+  "sucess": true
+}
+```
+
+`POST '/questions/search'`
+
+- Fetches questions based on the search parameters
+- Request Arguments: 
+ ```json
+    {
+      "searchTerm": "name"
+    }                  
+```
+- Returns: An object with  `categories`, that contains an object of `id: category_string` key: value pairs and a list of `questions` where id is the question id.
+
+```json
+{
+    "categories": {
+        "1": "Science",
+        "2": "Art",
+        "3": "Geography",
+        "4": "History",
+        "5": "Entertainment",
+        "6": "Sports"
+    },
+    "questions": [
+        {
+            "answer": "Muhammad Ali",
+            "category": "5",
+            "difficulty": 4,
+            "id": 3,
+            "question": "What boxer's original name is Cassius Clay?"
+        },
+        {
+            "answer": "kazeem",
+            "category": "1",
+            "difficulty": 1,
+            "id": 23,
+            "question": "what is your name"
+        },
+        {
+            "answer": "kazeem",
+            "category": "1",
+            "difficulty": 4,
+            "id": 24,
+            "question": "what is my name?"
+        },
+        {
+            "answer": "kazeem",
+            "category": "1",
+            "difficulty": 4,
+            "id": 25,
+            "question": "what is your name?"
+        },
+        {
+            "answer": "kazeem",
+            "category": "1",
+            "difficulty": 4,
+            "id": 26,
+            "question": "what is your name?"
+        }
+    ],
+    "sucess": true,
+    "total_questions": 5
+}
+```
+
+`GET '/categories/3/questions'`
+
+- Fetches questions relating to the passed category id
+- Request Arguments: category_id -> 3 as written above on the url
+- Returns: An object with four different keys, currentCategory, questions, success, totalQuestions.
+
+```json
+{
+    "currentCategory": "3",
+    "questions": [
+        {
+            "answer": "Lake Victoria",
+            "category": "3",
+            "difficulty": 2,
+            "id": 10,
+            "question": "What is the largest lake in Africa?"
+        },
+        {
+            "answer": "The Palace of Versailles",
+            "category": "3",
+            "difficulty": 3,
+            "id": 11,
+            "question": "In which royal palace would you find the Hall of Mirrors?"
+        },
+        {
+            "answer": "Agra",
+            "category": "3",
+            "difficulty": 2,
+            "id": 12,
+            "question": "The Taj Mahal is located in which Indian city?"
+        }
+    ],
+    "sucess": true,
+    "totalQuestions": 3
 }
 ```
 

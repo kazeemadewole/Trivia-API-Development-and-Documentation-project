@@ -35,18 +35,26 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_all_categories():
-        page = request.args.get('page', 1, type=int)
-        start = (page - 1) * 10
-        end = start + 10
-        categories = Category.query.all()
-        formatted_categories = {}
-        for category in categories:
-            formatted_categories[category.id] = category.type
-        return jsonify({
-            'sucess': True,
-            'categories' : formatted_categories,
-            'total_categories': len(formatted_categories)
-        })
+        try:
+            page = request.args.get('page', 1, type=int)
+            start = (page - 1) * 10
+            end = start + 10
+            categories = Category.query.all()
+            if start > len(categories):
+                abort(404)
+            formatted_categories = {}
+            for category in categories:
+                formatted_categories[category.id] = category.type
+            return jsonify({
+                'sucess': True,
+                'categories' : formatted_categories,
+                'total_categories': len(formatted_categories)
+            })
+        except:
+            db.session.rollback()
+            abort(404)
+        finally:
+            db.session.close()
 
 
     """
@@ -63,21 +71,29 @@ def create_app(test_config=None):
     """
     @app.route('/questions')
     def get_all_questions():
-        page = request.args.get('page', 1, type=int)
-        start = (page - 1) * 10
-        end = start + 10
-        questions = Question.query.all()
-        formatted_questions = [question.format() for question in questions]
-        categories = Category.query.all()
-        formatted_categories = {}
-        for category in categories:
-            formatted_categories[category.id] = category.type
-        return jsonify({
-            'sucess': True,
-            'questions' : formatted_questions[start:end],
-            'categories': formatted_categories,
-            'total_questions': len(formatted_questions)
-        })
+        try:
+            page = request.args.get('page', 1, type=int)
+            start = (page - 1) * 10
+            end = start + 10
+            questions = Question.query.all()
+            formatted_questions = [question.format() for question in questions]
+            if start > len(formatted_questions):
+                abort(404)
+            categories = Category.query.all()
+            formatted_categories = {}
+            for category in categories:
+                formatted_categories[category.id] = category.type
+            return jsonify({
+                'sucess': True,
+                'questions' : formatted_questions[start:end],
+                'categories': formatted_categories,
+                'total_questions': len(formatted_questions)
+            })
+        except:
+            db.session.rollback()
+            abort(404)
+        finally:
+            db.session.close()
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -94,11 +110,12 @@ def create_app(test_config=None):
             db.session.commit()
             return jsonify({
             'sucess': True,
-            'message' : 'deleted'
+            'message' : 'deleted',
+            'question_id': question_id
         })
         except:
             db.session.rollback()
-            error = True
+            abort(404)
         finally:
             db.session.close()
     """
@@ -122,9 +139,7 @@ def create_app(test_config=None):
             })   
         except:        
             db.session.rollback()
-            return jsonify({
-            'sucess': False
-            }) 
+            abort(422)
         finally:
             db.session.close()
     """
@@ -143,6 +158,8 @@ def create_app(test_config=None):
             body = request.get_json()
             if body["searchTerm"]:
                 questions = Question.query.filter(Question.question.ilike('%'+body["searchTerm"]+'%')).all()
+                if len(questions) == 0:
+                    abort(404)
                 formatted_questions = [question.format() for question in questions]
                 categories = Category.query.all()
                 formatted_categories = {}
@@ -156,9 +173,7 @@ def create_app(test_config=None):
                 })
         except:        
             db.session.rollback()
-            return jsonify({
-            'sucess': False
-            }) 
+            abort(404)
         finally:
             db.session.close()
     """
@@ -176,6 +191,8 @@ def create_app(test_config=None):
             start = (page - 1) * 10
             end = start + 10
             questions = Question.query.filter_by(category=category_id).all()
+            if len(questions) == 0:
+                abort(404)
             formatted_question = [question.format() for question in questions]
             return jsonify({
             'sucess': True,
@@ -185,9 +202,7 @@ def create_app(test_config=None):
             })
         except:
             db.session.rollback()
-            return jsonify({
-            'sucess': False
-            })
+            abort(404)
         finally:
             db.session.close()
     """
@@ -224,6 +239,21 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "sucess": False,
+            "error": 404,
+            "message": "Not found"
+        }),404
+    
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            'sucess': False,
+            'error': 422,
+            'message': "unprocessable"
+        }),422
 
     return app
 

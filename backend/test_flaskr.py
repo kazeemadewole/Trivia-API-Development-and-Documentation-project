@@ -29,7 +29,22 @@ class TriviaTestCase(unittest.TestCase):
             "question": "what is my name?",
             "answer":"kazeem",
             "difficulty":4,
+            "category": "3"
+        }
+
+        self.invalid_json_question = {
+            "questin": "what is my name?",
+            "answer":"kazeem",
+            "difficulty":4,
             "category": "1"
+        }
+
+        self.search_term= {
+            "searchTerm": "name"
+        }
+
+        self.search_term_error= {
+            "searchTerm": "name1239*23V"
         }
     
     def tearDown(self):
@@ -47,13 +62,29 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(len(data["categories"]))
         self.assertEqual(len(data["categories"]), 6)
-
+    
+    def test_404_get_invalid_categories(self):
+        res = self.client().get('/categories?page=10')
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
+    
     def test_get_questions(self):
         res = self.client().get('/questions')
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["sucess"], True)
+
+    def test_404_get_invalid_question(self):
+        res = self.client().get('/questions?page=10')
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
 
     def test_get_all_question_for_a_categories(self):
         res = self.client().get('/categories/2/questions')
@@ -63,20 +94,57 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data["sucess"], True)
         self.assertTrue(data["currentCategory"], 2)
 
+    def test_404_get_all_question_for_invalid_categories(self):
+        res = self.client().get('/categories/2000/questions')
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
+
     def test_delete_question(self):
-        res = self.client().delete('/questions/4')
+        res = self.client().delete('/questions/9')
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data["message"])
         self.assertEqual(data["message"], 'deleted')
-    #     self.assertTrue(data["sucess"], True)
+
+    def test_404_delete_invalid_question(self):
+        res = self.client().delete('/questions/1001')
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
 
     def test_create_new_question(self):
         res = self.client().post('/questions', json=self.newquestion)
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
+
+    def test_422_create_new_question_error(self):
+        res = self.client().post('/questions', json=self.invalid_json_question)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "unprocessable")
+
+    def test_search_question(self):
+        res = self.client().post('/questions/search', json=self.search_term)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+
+    def test_404_search_question_error(self):
+        res = self.client().post('/questions/search', json=self.search_term_error)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
         
 # Make the tests conveniently executable
 if __name__ == "__main__":
