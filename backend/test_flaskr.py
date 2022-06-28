@@ -46,6 +46,14 @@ class TriviaTestCase(unittest.TestCase):
         self.search_term_error= {
             "searchTerm": "name1239*23V"
         }
+
+        self.quiz_object = {
+            "quiz_category": 3
+        }
+
+        self.quiz_object_error = {
+            "quiz_category": 2000
+        }
     
     def tearDown(self):
         """Executed after reach test"""
@@ -140,6 +148,20 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_404_search_question_error(self):
         res = self.client().post('/questions/search', json=self.search_term_error)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["sucess"], False)
+        self.assertEqual(data["message"], "Not found")
+
+    def test_play_quizze(self):
+        res = self.client().post('/quizzes', json=self.quiz_object)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+
+    def test_404_splay_quizze_error(self):
+        res = self.client().post('/quizzes', json=self.quiz_object_error)
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 404)

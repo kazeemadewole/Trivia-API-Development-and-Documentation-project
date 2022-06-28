@@ -47,7 +47,7 @@ def create_app(test_config=None):
                 formatted_categories[category.id] = category.type
             return jsonify({
                 'sucess': True,
-                'categories' : formatted_categories,
+                'categories': formatted_categories,
                 'total_categories': len(formatted_categories)
             })
         except:
@@ -85,15 +85,16 @@ def create_app(test_config=None):
                 formatted_categories[category.id] = category.type
             return jsonify({
                 'sucess': True,
-                'questions' : formatted_questions[start:end],
+                'questions': formatted_questions[start:end],
                 'categories': formatted_categories,
                 'total_questions': len(formatted_questions)
-            })
+                })
         except:
             db.session.rollback()
             abort(404)
         finally:
             db.session.close()
+
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -109,10 +110,10 @@ def create_app(test_config=None):
             db.session.delete(question)
             db.session.commit()
             return jsonify({
-            'sucess': True,
-            'message' : 'deleted',
-            'question_id': question_id
-        })
+                'sucess': True,
+                'message': 'deleted',
+                'question_id': question_id
+                })
         except:
             db.session.rollback()
             abort(404)
@@ -130,18 +131,24 @@ def create_app(test_config=None):
     """
     @app.route('/questions', methods=['POST'])
     def create_question():
-        try: 
+        try:
             body = request.get_json()
-            question = Question(body["question"],body["answer"], body["category"],body["difficulty"])
+            question = Question(
+                            body["question"],
+                            body["answer"],
+                            body["category"],
+                            body["difficulty"]
+                            )
             question.insert()
             return jsonify({
-            'sucess': True
-            })   
-        except:        
+                'sucess': True
+                })
+        except:
             db.session.rollback()
             abort(422)
         finally:
             db.session.close()
+
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -154,10 +161,12 @@ def create_app(test_config=None):
     """
     @app.route('/questions/search', methods=['POST'])
     def search_question():
-        try: 
+        try:
             body = request.get_json()
             if body["searchTerm"]:
-                questions = Question.query.filter(Question.question.ilike('%'+body["searchTerm"]+'%')).all()
+                questions = Question.query.filter(
+                    Question.question.ilike('%'+body["searchTerm"]+'%')
+                    ).all()
                 if len(questions) == 0:
                     abort(404)
                 formatted_questions = [question.format() for question in questions]
@@ -166,16 +175,17 @@ def create_app(test_config=None):
                 for category in categories:
                     formatted_categories[category.id] = category.type
                 return jsonify({
-                'sucess': True,
-                'questions' : formatted_questions,
-                'categories': formatted_categories,
-                'total_questions': len(formatted_questions)
-                })
-        except:        
+                    'sucess': True,
+                    'questions': formatted_questions,
+                    'categories': formatted_categories,
+                    'total_questions': len(formatted_questions)
+                    })
+        except:
             db.session.rollback()
             abort(404)
         finally:
             db.session.close()
+
     """
     @TODO:
     Create a GET endpoint to get questions based on category.
@@ -195,16 +205,17 @@ def create_app(test_config=None):
                 abort(404)
             formatted_question = [question.format() for question in questions]
             return jsonify({
-            'sucess': True,
-            'questions' : formatted_question[start:end],
-            'totalQuestions': len(formatted_question),
-            'currentCategory': category_id
-            })
+                'sucess': True,
+                'questions': formatted_question[start:end],
+                'totalQuestions': len(formatted_question),
+                'currentCategory': category_id
+                })
         except:
             db.session.rollback()
             abort(404)
         finally:
             db.session.close()
+
     """
     @TODO:
     Create a POST endpoint to get questions to play the quiz.
@@ -217,23 +228,27 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
     @app.route('/quizzes', methods=['POST'])
-    def play_quiz():
-        try: 
+   def play_quiz():
+        try:
             body = request.get_json()
-            questions = Question.query.filter_by(category=body["quiz_category"]).all()
-            rand = random.randint(0,len(questions)+1)
+            questions = Question.query.filter_by(
+                    category=body["quiz_category"]).all()
+            if len(questions) == 0:
+                abort(404)
+            rand = random.randint(0, len(questions)+1)
             formatted_question = [question.format() for question in questions]
             return jsonify({
-            'sucess': True,
-            'question':formatted_question[rand]
-            })   
-        except:        
+                'sucess': True,
+                'question': formatted_question[rand]
+                })
+        except:
             db.session.rollback()
             return jsonify({
-            'sucess': False
-            }) 
+                'sucess': False
+                })
         finally:
             db.session.close()
+
     """
     @TODO:
     Create error handlers for all expected errors
@@ -245,15 +260,31 @@ def create_app(test_config=None):
             "sucess": False,
             "error": 404,
             "message": "Not found"
-        }),404
+            }),404
     
     @app.errorhandler(422)
     def unprocessable(error):
         return jsonify({
             'sucess': False,
             'error': 422,
-            'message': "unprocessable"
-        }),422
+            'message': "Unprocessable"
+            }),422
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return jsonify({
+            'sucess': False,
+            'error': 500,
+            'message': "Internal Server Error"
+            }),500
+    
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'sucess': False,
+            'error': 400,
+            'message': "Bad Request"
+            }),422
 
     return app
 
